@@ -15,7 +15,7 @@
             item: 'Iphone 18 Pro Max Ultra Limited Special Shiny Edition',
             price: 123123123123,
             goal: 'a milenium',
-            approved: false
+            approved: true
         }
     ]
     }
@@ -60,6 +60,6 @@
         <br><br>
         <label for="goal">Goal (days)</label>
         <input type="number" name="goal" id="goal" placeholder="Goal">
-    <button>submit for review</button>
+    <button onclick={() => (showModal = false)}>submit for review</button>
     </form>
 </Modal>
