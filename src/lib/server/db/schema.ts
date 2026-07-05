@@ -1,7 +1,10 @@
-import { pgTable, serial, integer, text } from 'drizzle-orm/pg-core';
+import { pgTable, integer, text } from 'drizzle-orm/pg-core';
 
-export const task = pgTable('task', {
-	id: serial('id').primaryKey(),
-	title: text('title').notNull(),
-	priority: integer('priority').notNull().default(1)
+export const user = pgTable('user', {
+	slackId: text('slack_id').primaryKey(),
+	currency: integer('currency').notNull().default(0),
+	email: text('email').notNull(),
+	verified: integer('verified').notNull().default(0),
+	createdAt: integer('created_at').notNull().default(0),
+	updatedAt: integer('updated_at').notNull().default(0)
 });
