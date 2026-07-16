@@ -1,6 +1,8 @@
 <script>
     import Modal from '../../../modal.svelte';
+    import ItemRules from '$lib/components/ItemRules.svelte'
     let showModal = $state(false);
+    let addItemVerif = $state(false);
 
     // replace wth db @pkd2210
     const shop = {
@@ -48,18 +50,23 @@
 <Modal bind:showModal>
 	{#snippet header()}
 		<h2>
-			Add Item to Shop
+			Add Item
 		</h2>
 	{/snippet}
-    <form>
-        <label for="item">Item Name</label>
-        <input type="text" name="item" id="item" placeholder="Item Name">
-        <br><br>
-        <label for="price">Price (USD)</label>
-        <input type="number" name="price" id="price" placeholder="Price">
-        <br><br>
-        <label for="goal">Goal (days)</label>
-        <input type="number" name="goal" id="goal" placeholder="Goal">
-    <button onclick={() => (showModal = false)}>submit for review</button>
-    </form>
+    {#if addItemVerif === false}
+        <ItemRules />
+        <button onclick={() => (addItemVerif = true)}>I understand the rules</button>
+    {:else}
+        <form>
+            <label for="item">Item Name</label>
+            <input type="text" name="item" id="item" placeholder="Item Name">
+            <br><br>
+            <label for="price">Price (USD)</label>
+            <input type="number" name="price" id="price" placeholder="Price">
+            <br><br>
+            <label for="goal">Goal (days)</label>
+            <input type="number" name="goal" id="goal" placeholder="Goal">
+            <button onclick={() => (showModal = false)}>submit for review</button>
+        </form>
+    {/if}
 </Modal>

@@ -26,7 +26,11 @@
 
 <style>
 	dialog {
+		position: fixed;
+		inset: 0;
+		margin: auto;
 		max-width: 32em;
+		width: min(32em, calc(100vw - 2rem));
 		border-radius: 0.2em;
 		border: none;
 		padding: 0;
