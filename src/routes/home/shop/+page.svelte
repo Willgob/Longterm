@@ -1,5 +1,6 @@
 <script>
     import Modal from '../../../modal.svelte';
+    import button from '$lib/components/button.svelte';
     import ItemRules from '$lib/components/ItemRules.svelte'
     let showModal = $state(false);
     let addItemVerif = $state(false);
