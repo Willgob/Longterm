@@ -1,5 +1,5 @@
 <script>
-    import Modal from '../../modal.svelte';
+    import Modal from '../../../modal.svelte';
     let showModal = $state(false);
 
     // replace wth db @pkd2210
