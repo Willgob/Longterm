@@ -3,7 +3,9 @@
   let { children, data } = $props();
 </script>
 
-<div class="dashboard-container">
+
+
+<div id="dashboard-container" >
   <SideNav slackId={data.slackId} displayName={data.displayName} avatarUrl={data.avatarUrl} goldBars={data.goldBars} isReviewerUser={data.user?.isReviewer ?? false} />
   <main class="dashboard-content">
     {@render children()}
@@ -11,7 +13,7 @@
 </div>
 
 <style>
-  .dashboard-container {
+  #dashboard-container {
     display: flex;
     min-height: 100vh;
   }
@@ -25,7 +27,7 @@
   }
 
   @media (max-width: 768px) {
-    .dashboard-container {
+    #dashboard-container {
       flex-direction: column;
     }
 

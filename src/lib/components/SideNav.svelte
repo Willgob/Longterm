@@ -1,6 +1,6 @@
 <script lang=ts>
   import { page } from '$app/stores';
-  import Button from './button.svelte';
+  import Button from './SideNavbutton.svelte';
   let isMobileOpen = $state(false);
   
   let { slackId = '', displayName = '', avatarUrl = '', goldBars = 0, isReviewerUser = false } = $props();
@@ -29,7 +29,7 @@
     onclick={() => isMobileOpen = !isMobileOpen}
     aria-label="Toggle navigation"
   >
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffe4b5" stroke-width="2">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <line x1="3" y1="6" x2="21" y2="6"></line>
       <line x1="3" y1="12" x2="21" y2="12"></line>
       <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -58,7 +58,7 @@
           <p class="gold-bars"><img draggable="false" src="/assets/Gold Bar.webp" alt="Gold Bar" class="gold-icon" />{goldBars}</p>
       </div>
       <a href="/api/logout" class="logout-btn" title="Logout">
-        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#ffe4b5"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
       </a>
     </div>
   </nav>
@@ -68,7 +68,7 @@
 <style>
   .gold-bars {
     font-size: 0.75rem;
-    color: #ffe4b5;
+    color: var(--text-900);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       display: flex;
       align-items: center;
@@ -92,7 +92,7 @@
     border: none;
     cursor: pointer;
     padding: 0.5rem;
-    color: #1B2D48;
+    color: var(--text-900);
     z-index: 60;
   }
 
@@ -101,8 +101,8 @@
     left: 0;
     top: 0;
     width: 250px;
-    background: linear-gradient(135deg, #6f4326 0%, #593219 50%, #6f4326 100%);
-    border-right: 3px solid #E8BB35;
+    background: linear-gradient(135deg, var(--background-700) 0%, var(--background-800) 50%, var(--background-700) 100%);
+    border-right: 3px solid var(--accent-500);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -113,7 +113,7 @@
 
   .sidebar-header {
     padding: 1.5rem;
-    border-bottom: 1px solid #E8BB35;
+    border-bottom: 1px solid var(--accent-500);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -136,7 +136,7 @@
 
   .sidebar-footer {
     padding: 1rem;
-    border-top: 1px solid rgba(232, 187, 53, 0.3);
+    border-top: 1px solid var(--accent-400);
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -146,7 +146,7 @@
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
-    border: 2px solid #E8BB35;
+    border: 2px solid var(--accent-500);
     flex-shrink: 0;
     object-fit: cover;
   }
@@ -162,7 +162,7 @@
 
   .username {
     margin: 0;
-    color: #ffe4b5;
+    color: var(--text-900);
     font-size: 0.875rem;
     font-weight: 600;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -190,13 +190,14 @@
     width: 2rem;
     height: 2rem;
     border-radius: 4px;
-    background-color: rgba(232, 187, 53, 0.1);
+    color: var(--text-900);
+    background-color: var(--background-600);
     transition: all 0.2s ease;
     flex-shrink: 0;
   }
 
   .logout-btn:hover {
-    background-color: rgba(232, 187, 53, 0.3);
+    background-color: var(--background-500);
     transform: scale(1.05);
   }
 
