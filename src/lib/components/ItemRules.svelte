@@ -1,17 +1,14 @@
-<script>
-  // ShopRules.svelte
-</script>
 
-<div class="shop-rules">
-  <p>
-    Hi there :hii: before requesting an item in the shop, please read these
-    rules carefully. Because these items go through review by the fulfilment
+<div class="p-4">
+  <p class="text-sm text-text-950">
+    Hi there before requesting an item in the shop, please read these
+    rules carefully.Because these items go through review by the fulfilment
     team, unfortunately not everything can be accepted.
   </p>
 
-  <p>Some rules before letting u go :D</p>
+  <p class="text-sm font-bold text-text-950 mb-3 pt-5">Some rules before letting u go :D</p>
 
-  <ul>
+  <ul class="list-disc pl-5 space-y-2 text-text-800 text-sm marker:text-primary-500">
     <li>
       When you are entering the price, that is a guide NOT a solid number. It
       will only be used by fulfilment to figure out a suitable price for you.
@@ -35,35 +32,36 @@
     </li>
   </ul>
 
-  <p><strong>Examples of what to request and what not to request</strong></p>
+  <div class="mt-4">
+    <h3 class="text-sm font-bold text-text-950 mb-3">Item Request Guidelines</h3>
+    <div class="grid grid-cols-2 gap-x-6">
+      <div>
+        <p class="text-sm font-semibold text-accent-600 border-b border-background-300 pb-2 mb-2">Not acceptable</p>
+        <ul>
+          <li>Socks</li>
+          <li>Candy</li>
+          <li>A Bin</li>
+          <li>Pillows</li>
+          <li>Food</li>
+          <li>A Scented Candle</li>
+        </ul>
+      </div>
 
-  <u>What NOT to request:</u>
-  <ul>
-    <li>socks</li>
-    <li>candy</li>
-    <li>a bin</li>
-    <li>pillow</li>
-    <li>food</li>
-    <li>a scented candle :sk:</li>
-  </ul>
-
-  <u>What is acceptable:</u>
-  <ul>
-    <li>laptop</li>
-    <li>phone</li>
-    <li>mouse</li>
-    <li>keyboard</li>
-    <li>desktop/parts</li>
-    <li>drones</li>
-    <li>stream decks</li>
-    <li>headphones</li>
-    <li>3D printers</li>
-    <li>cnc machines</li>
-    <li>your dream camera</li>
-    <li>custom iems :eyes_wtf:</li>
-  </ul>
-
-  <p id="hacker-value">
+      <div>
+        <p class="text-sm font-semibold text-[#079c36] border-b border-background-300 mb-2 pb-2">Acceptable</p>
+        <ul>
+          <li>Laptops</li>
+          <li>Keyboards</li>
+          <li>Drones</li>
+          <li>3D Printers</li>
+          <li>CNC Machines</li>
+          <li>custom IEMs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <p id="hacker-value" class="pt-4 font-thin text-sm">
     <sup>1</sup> something with hacker value is something that is useful for
     software/hardware developing. e.g. a door has no hacker value whilst
     blahaj has the highest hacker value making u have 10x brainpower and -10
@@ -74,10 +72,6 @@
 </div>
 
 <style>
-  .shop-rules {
-    max-width: 640px;
-    line-height: 1.6;
-  }
 
   li {
     margin-bottom: 0.4rem;

@@ -1,5 +1,5 @@
 <script>
-	let { showModal = $bindable(), header, children } = $props();
+	let { showModal = $bindable(), children } = $props();
 
 	let dialog = $state(); // HTMLDialogElement
 
@@ -12,15 +12,24 @@
 <dialog
 	bind:this={dialog}
 	onclose={() => (showModal = false)}
-	onclick={(e) => { if (e.target === dialog) dialog.close(); }}
+  	onclick={(e) => {
+        const rect = dialog.getBoundingClientRect();
+        const clickedInside =
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom;
+        if (!clickedInside) dialog.close();
+    }}	
+	class="h-157.5 w-100 rounded-xl bg-background-100 p-4 shadow-lg text-text-950 backdrop:blur-xl backdrop:bg-background-200/50 border-2 border-background-950"
 >
 	<div>
-		{@render header?.()}
-		<hr />
+		<!-- {@render header?.()} -->
+
 		{@render children?.()}
-		<hr />
+		<!-- <hr /> -->
 		<!-- svelte-ignore a11y_autofocus -->
-		<button autofocus onclick={() => dialog.close()}>close modal</button>
+		<!-- <button class="cursor-pointer" autofocus onclick={() => dialog.close()}>close modal</button> -->
 	</div>
 </dialog>
 
@@ -31,16 +40,13 @@
 		margin: auto;
 		max-width: 32em;
 		width: min(32em, calc(100vw - 2rem));
-		border-radius: 0.2em;
-		border: none;
-		padding: 0;
 	}
-	dialog::backdrop {
+	/* dialog::backdrop {
 		background: rgba(0, 0, 0, 0.3);
 	}
 	dialog > div {
 		padding: 1em;
-	}
+	} */
 	dialog[open] {
 		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 	}
@@ -53,7 +59,7 @@
 		}
 	}
 	dialog[open]::backdrop {
-		animation: fade 0.2s ease-out;
+		animation: fade 0.3s ease-out;
 	}
 	@keyframes fade {
 		from {
@@ -63,7 +69,7 @@
 			opacity: 1;
 		}
 	}
-	button {
+	/* button {
 		display: block;
-	}
+	} */
 </style>
