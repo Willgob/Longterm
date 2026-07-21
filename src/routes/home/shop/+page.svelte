@@ -128,6 +128,9 @@
 
                 <label for="spec" class="text-sm text-text-700">Spec/Config (Optional)</label>
                 <textarea name="spec" id="spec" placeholder="Black, Maxed out" class="rounded=md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" ></textarea>
+
+                <label for="image" class="text-sm text-text-700">Image</label>
+                <input type="link" name="image" id="image" placeholder="cdn.hackclub.com/..." class="rounded=md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" required>
         
                 <button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white mr-4" onclick={() => (showModal = false)}>Submit For Review</button>
             </form>
