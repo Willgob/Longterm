@@ -1,11 +1,11 @@
 <script>
     import Modal from '../../../lib/components/modal.svelte';
-    import ItemRules from '$lib/components/ItemRules.svelte'
+    import Request from '../../../lib/components/Request.svelte';
     import Button from '$lib/components/button.svelte';
     let showModal = $state(false);
-    let addItemVerif = $state(false);
 
     // replace wth db @pkd2210
+
     const shop = {
     "items" : [
         {
@@ -13,14 +13,16 @@
             price: 1200,
             goal: 'a year',
             approved: false,
-            hoursApproved: 0
+            hoursApproved: 0,
+            description: 'TEST'
         },
         {
-            item: 'Iphone 18 Pro Max Ultra Limited Special Shiny Edition',
+            item: 'CMF Buds Pro 2',
             price: 123123123123,
             goal: 'a milenium',
             approved: true,
-            hoursApproved: 30
+            hoursApproved: 30,
+            description: 'text'
         }
     ]
     }
@@ -61,7 +63,7 @@
 
 <div class="flex items-center p-4">
     <button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white mr-4" onclick={() => (showModal = true)}>Request Item</button>
-    <button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white" onclick={() => (showModal = true)}>Orders</button>
+    <a href="/home/shop/orders" class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white" >Orders</a>
 </div>
 
 <!-- items -->
@@ -71,12 +73,12 @@
             <div>
                 <!-- Image -->
                 <div class="mx-auto relative flex h-40 w-48 items-center justify-center overflow-hidden rounded-xl border-0 border-dashed border-primary-500 bg-primary-700/15 p-1">
-                    <img src="https://cdn.hackclub.com/019f74ff-21f8-7f29-b2a8-916c9afa4d60/testshoop.jpg" alt="" class="block h-full w-full rounded-xl object-contain object-center" />
+                    <img src="https://cdn.hackclub.com/019f74ff-21f8-7f29-b2a8-916c9afa4d60/testshoop.jpg" alt="test" class="block h-full w-full rounded-xl object-contain object-center" />
                 </div>
                 
                 <!-- Item Name -->
-                <p class="text-xl text-center pt-1 text-text-800 font-semibold">Asus Zenbook Duo</p>
-                <p class="text-xs text-center pt-1 text-text-800">This is MY DREEEAM Laptop</p>
+                <p class="text-xl text-center pt-1 text-text-800 font-semibold">{item.item}</p>
+                <p class="text-xs text-center pt-1 text-text-800">{item.description}</p>
             </div>
 
             <div class="flex w-full flex-col gap-2">
@@ -104,36 +106,5 @@
 
 
 <Modal bind:showModal>
-    <div class="flex flex-col gap-4 items-center justify-center">
-        <h2 class="text-2xl font-semibold">
-            Request Item
-        </h2>
-        {#if addItemVerif === false}
-            <ItemRules />
-            <button type="button" class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white mr-4 mb-3" onclick={() => (addItemVerif = true)}>I have read and understood the rules</button>
-        {:else}
-            <form class="flex flex-col gap-4">
-                <label for="item" class="text-sm text-text-700">Product Name</label>
-                <input type="text" name="item" id="item" placeholder="Asus Zenbook Duo" class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" required>
-                
-                <label for="price" class="text-sm text-text-700">Price (Min $100 USD)</label>
-                <input type="number" name="price" id="price" min="100" placeholder="3000" class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" required>
-                
-                <label for="goal" class="text-sm text-text-700">Goal (days)</label>
-                <input type="number" name="goal" id="goal" placeholder="Goal" class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" required>
-
-                <label for="description" class="text-sm text-text-700">Description</label>
-                <textarea name="description" id="description" placeholder="A Very Cool Computer" class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" ></textarea>
-
-
-                <label for="spec" class="text-sm text-text-700">Spec/Config (Optional)</label>
-                <textarea name="spec" id="spec" placeholder="Black, Maxed out" class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" ></textarea>
-
-                <label for="image" class="text-sm text-text-700">Image TO BE REPLACED</label>
-                <input type="link" name="image" id="image" placeholder="cdn.hackclub.com/..." class="rounded-md border border-background-30 bg-background-50 px-3 py-2 text-text-950 text-sm" required>
-        
-                <button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white mr-4" onclick={() => (showModal = false)}>Submit For Review</button>
-            </form>
-        {/if}        
-    </div>
+    <Request onClose={() => (showModal=false)}/>
 </Modal>
