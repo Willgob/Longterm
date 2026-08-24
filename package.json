@@ -32,8 +32,6 @@
 	},
 	"dependencies": {
 		"@uploadthing/svelte": "^7.3.3",
-		"convex": "^1.45.0",
-		"convex-svelte": "^0.14.0",
 		"uploadthing": "^7.7.4"
 	}
 }
