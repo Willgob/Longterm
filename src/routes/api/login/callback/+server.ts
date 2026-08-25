@@ -7,12 +7,13 @@ export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
     const oauthError = url.searchParams.get("error");
     if (oauthError) {
         console.error("HCA returned an error:", oauthError);
-        return new Response(`Login failed: ${oauthError}`, { status: 400 });
+        const description = url.searchParams.get("error_description");
+        return new Response(`Login failed: ${description ?? oauthError}`, { status: 400 });
     }
 
     const authCode = url.searchParams.get("code");
     if (!authCode) {
-        return new Response("Missing authorization code", { status: 400 });
+        return new Response("Missing authorization code. Start the login flow from /api/login.", { status: 400 });
     }
 
     const expectedState = cookies.get("hca_oauth_state");
@@ -50,13 +51,28 @@ export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
 
     const tokens = await tokenResponse.json();
 
-    cookies.set("hca_session", tokens.access_token, {
+    const accessTokenMaxAge = Math.min(
+        typeof tokens.expires_in === "number" ? tokens.expires_in : 60 * 60,
+        60 * 60
+    );
+
+    cookies.set("hca_access_token", tokens.access_token, {
         path: "/",
         httpOnly: true,
         secure: !dev,
         sameSite: "lax",
-        maxAge: tokens.expires_in ?? 60 * 60 * 24 * 7
+        maxAge: accessTokenMaxAge
     });
 
-    throw redirect(302, "/");
+    if (tokens.refresh_token) {
+        cookies.set("hca_refresh_token", tokens.refresh_token, {
+            path: "/",
+            httpOnly: true,
+            secure: !dev,
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 180
+        });
+    }
+
+    throw redirect(302, "/home");
 };

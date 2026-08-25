@@ -1,5 +1,5 @@
-<script>
-    let { href, text, onclick } = $props();
+<script lang="ts">
+    let { href, text, onclick }: { href: string; text: string; onclick?: () => void } = $props();
 </script>
 <style>
     .on-hover {

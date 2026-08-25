@@ -5,7 +5,12 @@
     <a href="https://hackclub.com/">
         <img class="absolute top-0 border-0 w-40 z-999" src="https://assets.hackclub.com/flag-orpheus-left.svg" alt="Hack Club"/>
     </a>
-    <button class="absolute top-3 right-5 cursor-pointer h-10 w-30 rounded overflow-hidden bg-background-400 flex items-center justify-center gap-2">Sign Up</button>
+    <a
+        href="/api/login"
+        class="absolute top-3 right-5 flex h-10 w-30 items-center justify-center gap-2 overflow-hidden rounded bg-background-400 font-semibold transition-colors hover:bg-background-500 focus:outline-2 focus:outline-offset-2 focus:outline-background-600"
+    >
+        Sign Up
+    </a>
 </div>
 
 <div class="relative flex justify-center flex-col text-center gap-2 mt-12">
@@ -20,4 +25,3 @@
         <p class="text-xl text-neutral-600 mt-4">Long time, <span class="text-red-400">big prizes.</span></p>
     </div>
 </div>
-
