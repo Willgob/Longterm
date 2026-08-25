@@ -2,4 +2,4 @@
 	let { data } = $props();
 </script>
 
-{data.data}
+{data.slackId}
