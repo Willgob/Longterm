@@ -12,7 +12,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		displayName: locals.user.displayName,
 		avatarUrl: locals.user.avatarUrl,
 		goldBars: dbUser.clocks,
-		user: { ...locals.user, isReviewer: false },
+		strikes: dbUser.strikes,
+		user: { ...locals.user, isReviewer: dbUser.isReviewer === 1 },
 		data: locals.user
 	};
 };

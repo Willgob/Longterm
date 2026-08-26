@@ -3,7 +3,7 @@
   import Button from './SideNavbutton.svelte';
   let isMobileOpen = $state(false);
   
-  let { slackId = '', displayName = '', avatarUrl = '', goldBars = 0, isReviewerUser = false } = $props();
+  let { slackId = '', displayName = '', avatarUrl = '', goldBars = 0, strikes = 0, isReviewerUser = false } = $props();
   
   const navItems = $derived.by(() => {
     const items = [
@@ -15,7 +15,7 @@
     ];
 
     if (isReviewerUser) {
-      items.push({ label: 'Review', href: '/review' });
+      items.push({ label: 'Review', href: '/home/item_review' });
     }
 
     return items;
@@ -56,6 +56,7 @@
       <div class="user-info">
         <p class="username">{displayName || 'Guest'}</p>
           <p class="gold-bars"><img draggable="false" src="/assets/Gold Bar.webp" alt="Gold Bar" class="gold-icon" />{goldBars}</p>
+          {#if strikes > 0}<p class="strike-count">{strikes} strike{strikes === 1 ? '' : 's'}</p>{/if}
       </div>
       <a href="/api/logout" class="logout-btn" title="Logout">
         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>
@@ -74,6 +75,12 @@
       align-items: center;
       gap: 0.35rem;
       margin: 0;
+  }
+  .strike-count {
+    margin: 0;
+    color: var(--accent-600);
+    font-size: 0.7rem;
+    font-weight: 700;
   }
   .sidebar-container {
     position: relative;
