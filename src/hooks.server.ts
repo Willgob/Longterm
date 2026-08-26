@@ -1,6 +1,7 @@
 import { dev } from '$app/environment';
 import { HCA_CLIENT_ID, HCA_CLIENT_SECRET } from '$env/static/private';
 import { redirect, type Handle } from '@sveltejs/kit';
+import { getAccessState, getOrCreateUser, isAdmin } from '$lib/server/user';
 
 type HcaIdentity = {
 	id?: string;
@@ -102,6 +103,28 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (!user && event.cookies.get('hca_refresh_token')) event.cookies.delete('hca_refresh_token', { path: '/' });
 
 	event.locals.user = user;
+	event.locals.account = undefined;
+
+	if (user) {
+		const account = await getOrCreateUser(user);
+		event.locals.account = {
+			perms: account.perms,
+			strikes: account.strikes,
+			strikeUpdatedAt: account.strikeUpdatedAt,
+			isReviewer: account.isReviewer
+		};
+
+		const access = getAccessState(account);
+		const isAuthenticationRoute = event.url.pathname.startsWith('/api/login') || event.url.pathname === '/api/logout';
+
+		if (!isAdmin(account) && access.programBanActive && event.url.pathname !== '/banned' && !isAuthenticationRoute) {
+			throw redirect(303, '/banned');
+		}
+
+		if (!isAdmin(account) && access.shopBanActive && event.url.pathname.startsWith('/home/shop')) {
+			throw redirect(303, '/banned?scope=shop');
+		}
+	}
 
 	if (event.url.pathname.startsWith('/home') && !user) {
 		throw redirect(303, '/');

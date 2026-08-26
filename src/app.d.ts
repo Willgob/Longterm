@@ -11,6 +11,12 @@ declare global {
 				avatarUrl: string;
 				verificationStatus: string;
 			};
+			account?: {
+				perms: 'user' | 'admin' | 'fulfillment' | 'item-review';
+				strikes: number;
+				strikeUpdatedAt: number | null;
+				isReviewer: number;
+			};
 		}
 		// interface Error {}
 		// interface PageData {}

@@ -1,8 +1,8 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { shop, shopImage, strike, user } from '$lib/server/db/schema';
-import { getOrCreateUser } from '$lib/server/user';
+import { shop, shopImage, user } from '$lib/server/db/schema';
+import { canReviewItems, getOrCreateUser } from '$lib/server/user';
 import type { Actions, PageServerLoad } from './$types';
 
 const reviewStatuses = ['pending', 'approved', 'changes_requested', 'rejected'] as const;
@@ -16,7 +16,7 @@ async function requireReviewer(locals: App.Locals) {
 	if (!locals.user) throw redirect(303, '/');
 
 	const reviewer = await getOrCreateUser(locals.user);
-	if (reviewer.isReviewer !== 1) throw error(403, 'You do not have permission to review items.');
+	if (!canReviewItems(reviewer)) throw error(403, 'You do not have permission to review items.');
 
 	return reviewer;
 }
@@ -174,23 +174,18 @@ export const actions: Actions = {
 
 			if (!reviewedItem) return false;
 
-			const [strikeCreated] = await tx
-				.insert(strike)
-				.values({
-					slackId: reviewedItem.requesterSlackId,
-					shopId: itemId,
-					reason: reviewNotes || null,
-					createdBy: reviewer.slackId,
-					createdAt: now
-				})
-				.onConflictDoNothing({ target: strike.shopId })
-				.returning({ id: strike.id });
+			const [requester] = await tx
+				.select({ strikes: user.strikes })
+				.from(user)
+				.where(eq(user.slackId, reviewedItem.requesterSlackId))
+				.limit(1);
 
-			if (!strikeCreated) throw new Error('A strike already exists for this item request.');
+			if (!requester) throw new Error('The item requester no longer exists.');
 
+			const nextStrikeCount = requester.strikes + 1;
 			await tx
 				.update(user)
-				.set({ strikes: sql`${user.strikes} + 1`, updatedAt: now })
+				.set({ strikes: Math.min(nextStrikeCount, 4), strikeUpdatedAt: now, updatedAt: now })
 				.where(eq(user.slackId, reviewedItem.requesterSlackId));
 
 			return true;

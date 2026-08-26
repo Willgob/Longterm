@@ -3,7 +3,7 @@
   import Button from './SideNavbutton.svelte';
   let isMobileOpen = $state(false);
   
-  let { slackId = '', displayName = '', avatarUrl = '', goldBars = 0, strikes = 0, isReviewerUser = false } = $props();
+  let { slackId = '', displayName = '', avatarUrl = '', goldBars = 0, strikes = 0, perms = 'user', isReviewerUser = false } = $props();
   
   const navItems = $derived.by(() => {
     const items = [
@@ -16,6 +16,14 @@
 
     if (isReviewerUser) {
       items.push({ label: 'Review', href: '/home/item_review' });
+    }
+
+    if (perms === 'fulfillment' || perms === 'admin') {
+      items.push({ label: 'Fulfillment', href: '/home/shop/orders' });
+    }
+
+    if (perms === 'admin') {
+      items.push({ label: 'Admin', href: '/home/admin' });
     }
 
     return items;
@@ -55,6 +63,7 @@
       <img src={avatarUrl} alt="User Avatar" class="avatar" />
       <div class="user-info">
         <p class="username">{displayName || 'Guest'}</p>
+          <p class="permission">{perms}</p>
           <p class="gold-bars"><img draggable="false" src="/assets/Gold Bar.webp" alt="Gold Bar" class="gold-icon" />{goldBars}</p>
           {#if strikes > 0}<p class="strike-count">{strikes} strike{strikes === 1 ? '' : 's'}</p>{/if}
       </div>
@@ -75,6 +84,13 @@
       align-items: center;
       gap: 0.35rem;
       margin: 0;
+  }
+  .permission {
+    margin: 0;
+    color: var(--text-700);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
   }
   .strike-count {
     margin: 0;

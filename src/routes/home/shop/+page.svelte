@@ -42,7 +42,9 @@
 
 <div class="flex items-center gap-4 p-4">
 	<button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white" onclick={() => (showModal = true)}>Request Item</button>
-	<a href="/home/shop/orders" class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white">Orders</a>
+	{#if data.user.perms === 'fulfillment' || data.user.perms === 'admin'}
+		<a href="/home/shop/orders" class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white">Fulfillment</a>
+	{/if}
 </div>
 
 {#if data.items.length > 0}

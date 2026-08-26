@@ -6,7 +6,7 @@
 
 
 <div id="dashboard-container" >
-  <SideNav slackId={data.slackId} displayName={data.displayName} avatarUrl={data.avatarUrl} goldBars={data.goldBars} strikes={data.strikes} isReviewerUser={data.user?.isReviewer ?? false} />
+  <SideNav slackId={data.slackId} displayName={data.displayName} avatarUrl={data.avatarUrl} goldBars={data.goldBars} strikes={data.strikes} perms={data.user.perms} isReviewerUser={data.user.isReviewer} />
   <main class="dashboard-content">
     {@render children()}
   </main>

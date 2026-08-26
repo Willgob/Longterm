@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, customType, index, integer, pgTable, serial, text, uniqueIndex } from 'drizzle-orm/pg-core';
+import { check, customType, index, integer, pgEnum, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
 const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
 	dataType() {
@@ -7,10 +7,14 @@ const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
 	}
 });
 
+export const userPermission = pgEnum('user_permission', ['user', 'admin', 'fulfillment', 'item-review']);
+
 export const user = pgTable('user', {
 	slackId: text('slack_id').primaryKey(),
 	clocks: integer('clocks').notNull().default(0),
 	strikes: integer('strikes').notNull().default(0),
+	strikeUpdatedAt: integer('strike_updated_at'),
+	perms: userPermission('perms').notNull().default('user'),
 	isReviewer: integer('is_reviewer').notNull().default(0),
 	email: text('email').notNull(),
 	displayName: text('display_name').notNull().default(''),
@@ -48,26 +52,6 @@ export const shop = pgTable(
 			'shop_status_check',
 			sql`${table.status} in ('pending', 'approved', 'changes_requested', 'rejected')`
 		)
-	]
-);
-
-export const strike = pgTable(
-	'strike',
-	{
-		id: serial('id').primaryKey(),
-		slackId: text('slack_id')
-			.notNull()
-			.references(() => user.slackId, { onDelete: 'cascade' }),
-		shopId: integer('shop_id')
-			.notNull()
-			.references(() => shop.id, { onDelete: 'restrict' }),
-		reason: text('reason'),
-		createdBy: text('created_by').references(() => user.slackId, { onDelete: 'set null' }),
-		createdAt: integer('created_at').notNull()
-	},
-	(table) => [
-		uniqueIndex('strike_shop_id_unique').on(table.shopId),
-		index('strike_slack_id_created_at_idx').on(table.slackId, table.createdAt)
 	]
 );
 
