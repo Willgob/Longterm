@@ -1,17 +1,17 @@
 import { eq } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/server/db';
-import { user } from '$lib/server/db/schema';
+import { permissionValues, user } from '$lib/server/db/schema';
 
 type AuthenticatedUser = NonNullable<App.Locals['user']>;
 type DatabaseUser = typeof user.$inferSelect;
 
-export type UserPermission = DatabaseUser['perms'];
-export const permissions = ['user', 'admin', 'fulfillment', 'item-review'] as const satisfies readonly UserPermission[];
+export type UserPermission = (typeof permissionValues)[number];
+export const permissions = permissionValues;
 export const weekInSeconds = 7 * 24 * 60 * 60;
 
 export type AccessState = {
-	perms: UserPermission;
+	perms: UserPermission[];
 	strikes: number;
 	strikeUpdatedAt: number | null;
 	shopBannedUntil: number | null;
@@ -33,16 +33,20 @@ function shouldBeBootstrapAdmin(slackId: string) {
 	return bootstrapAdminSlackIds().has(slackId);
 }
 
-export function isAdmin(account: Pick<DatabaseUser, 'perms'>) {
-	return account.perms === 'admin';
+export function hasPermission(account: Pick<DatabaseUser, 'perms'>, permission: UserPermission) {
+	return account.perms.includes('admin') || account.perms.includes(permission);
 }
 
-export function canReviewItems(account: Pick<DatabaseUser, 'perms' | 'isReviewer'>) {
-	return isAdmin(account) || account.perms === 'item-review' || account.isReviewer === 1;
+export function isAdmin(account: Pick<DatabaseUser, 'perms'>) {
+	return account.perms.includes('admin');
+}
+
+export function canReviewItems(account: Pick<DatabaseUser, 'perms'>) {
+	return hasPermission(account, 'item-review');
 }
 
 export function canFulfillOrders(account: Pick<DatabaseUser, 'perms'>) {
-	return isAdmin(account) || account.perms === 'fulfillment';
+	return hasPermission(account, 'fulfillment');
 }
 
 export function getAccessState(
@@ -72,8 +76,11 @@ export async function getOrCreateUser(authenticatedUser: AuthenticatedUser) {
 
 	if (existingUser) {
 		const verified = authenticatedUser.verificationStatus === 'verified' ? 1 : 0;
-		const perms = shouldBeBootstrapAdmin(authenticatedUser.slackId) ? 'admin' : existingUser.perms;
-		const profileChanged = existingUser.email !== authenticatedUser.email || existingUser.displayName !== authenticatedUser.displayName || existingUser.avatarUrl !== authenticatedUser.avatarUrl || existingUser.verified !== verified || existingUser.perms !== perms;
+		const perms = shouldBeBootstrapAdmin(authenticatedUser.slackId)
+			? [...new Set<UserPermission>([...existingUser.perms, 'admin'])]
+			: existingUser.perms;
+		const permissionsChanged = perms.some((permission) => !existingUser.perms.includes(permission));
+		const profileChanged = existingUser.email !== authenticatedUser.email || existingUser.displayName !== authenticatedUser.displayName || existingUser.avatarUrl !== authenticatedUser.avatarUrl || existingUser.verified !== verified || permissionsChanged;
 		if (!profileChanged) return existingUser;
 
 		const [updatedUser] = await db.update(user).set({ email: authenticatedUser.email, displayName: authenticatedUser.displayName, avatarUrl: authenticatedUser.avatarUrl, verified, perms, updatedAt: now }).where(eq(user.slackId, authenticatedUser.slackId)).returning();
@@ -87,7 +94,7 @@ export async function getOrCreateUser(authenticatedUser: AuthenticatedUser) {
 		avatarUrl: authenticatedUser.avatarUrl,
 		clocks: 0,
 		strikes: 0,
-		perms: shouldBeBootstrapAdmin(authenticatedUser.slackId) ? 'admin' : 'user',
+		perms: shouldBeBootstrapAdmin(authenticatedUser.slackId) ? ['admin', 'user'] : ['user'],
 		verified: authenticatedUser.verificationStatus === 'verified' ? 1 : 0,
 		createdAt: now,
 		updatedAt: now
@@ -134,7 +141,7 @@ export async function overturnBan(slackId: string, scope: 'shop' | 'program') {
 	return updatedUser;
 }
 
-export async function setUserPermission(slackId: string, perms: UserPermission) {
+export async function setUserPermissions(slackId: string, perms: UserPermission[]) {
 	const [updatedUser] = await db.update(user).set({ perms, updatedAt: nowInSeconds() }).where(eq(user.slackId, slackId)).returning();
 	return updatedUser;
 }

@@ -38,7 +38,7 @@
 
 	<div class="overflow-x-auto rounded-xl border-2 border-background-300">
 		<table class="min-w-full border-collapse text-left text-sm">
-			<thead class="bg-background-300"><tr><th class="p-3">User</th><th class="p-3">Strikes</th><th class="p-3">Ban status</th><th class="p-3">Permission</th><th class="p-3">Actions</th></tr></thead>
+			<thead class="bg-background-300"><tr><th class="p-3">User</th><th class="p-3">Strikes</th><th class="p-3">Ban status</th><th class="p-3">Permissions</th><th class="p-3">Actions</th></tr></thead>
 			<tbody>
 				{#each data.users as account}
 					<tr class="border-t border-background-300 align-top">
@@ -46,7 +46,18 @@
 						<td class="p-3">{account.strikes}</td>
 						<td class="p-3">{activeBan(account)}</td>
 						<td class="p-3">
-							<form method="POST" action="?/setPermission" class="flex gap-2"><input type="hidden" name="slackId" value={account.slackId} /><select name="perms" class="rounded border border-background-400 bg-background-100 p-1">{#each data.permissions as permission}<option value={permission} selected={account.perms === permission}>{permission}</option>{/each}</select><button class="cursor-pointer rounded bg-primary-500 px-2 py-1 text-white">Save</button></form>
+							<form method="POST" action="?/setPermission" class="grid min-w-44 gap-2">
+								<input type="hidden" name="slackId" value={account.slackId} />
+								<div class="grid grid-cols-2 gap-2">
+									{#each data.permissions as permission}
+										<label class="flex cursor-pointer items-center gap-2 rounded border border-background-400 bg-background-100 px-2 py-1.5">
+											<input type="checkbox" name="perms" value={permission} checked={account.perms.includes(permission)} />
+											<span>{permission.replace('-', ' ')}</span>
+										</label>
+									{/each}
+								</div>
+								<button class="cursor-pointer rounded bg-primary-500 px-2 py-1 font-semibold text-white">Save permissions</button>
+							</form>
 						</td>
 						<td class="p-3"><div class="flex flex-wrap gap-2"><form method="POST" action="?/removeStrike"><input type="hidden" name="slackId" value={account.slackId} /><button class="cursor-pointer rounded border border-background-500 px-2 py-1">Remove one strike</button></form><form method="POST" action="?/overturnBan"><input type="hidden" name="slackId" value={account.slackId} /><input type="hidden" name="scope" value="shop" /><button class="cursor-pointer rounded border border-background-500 px-2 py-1">Lift shop ban</button></form><form method="POST" action="?/overturnBan"><input type="hidden" name="slackId" value={account.slackId} /><input type="hidden" name="scope" value="program" /><button class="cursor-pointer rounded border border-background-500 px-2 py-1">Lift program ban</button></form></div></td>
 					</tr>

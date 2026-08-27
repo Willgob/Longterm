@@ -110,8 +110,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		event.locals.account = {
 			perms: account.perms,
 			strikes: account.strikes,
-			strikeUpdatedAt: account.strikeUpdatedAt,
-			isReviewer: account.isReviewer
+			strikeUpdatedAt: account.strikeUpdatedAt
 		};
 
 		const access = getAccessState(account);

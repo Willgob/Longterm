@@ -7,14 +7,18 @@ const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
 	}
 });
 
-export const userPermission = pgEnum('user_permission', ['user', 'admin', 'fulfillment', 'item-review']);
+export const permissionValues = ['user', 'admin', 'fulfillment', 'item-review'] as const;
+export const userPermission = pgEnum('user_permission', permissionValues);
 
 export const user = pgTable('user', {
 	slackId: text('slack_id').primaryKey(),
 	clocks: integer('clocks').notNull().default(0),
 	strikes: integer('strikes').notNull().default(0),
 	strikeUpdatedAt: integer('strike_updated_at'),
-	perms: userPermission('perms').notNull().default('user'),
+	perms: userPermission('perms')
+		.array()
+		.notNull()
+		.default(sql`ARRAY['user']::user_permission[]`),
 	isReviewer: integer('is_reviewer').notNull().default(0),
 	email: text('email').notNull(),
 	displayName: text('display_name').notNull().default(''),

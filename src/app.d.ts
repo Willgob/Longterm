@@ -12,10 +12,9 @@ declare global {
 				verificationStatus: string;
 			};
 			account?: {
-				perms: 'user' | 'admin' | 'fulfillment' | 'item-review';
+				perms: ('admin' | 'user' | 'item-review' | 'fulfillment')[];
 				strikes: number;
 				strikeUpdatedAt: number | null;
-				isReviewer: number;
 			};
 		}
 		// interface Error {}

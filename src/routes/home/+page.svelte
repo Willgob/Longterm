@@ -7,7 +7,7 @@
 	<header>
 		<p class="text-sm font-bold tracking-wide text-accent-600 uppercase">Longterm dashboard</p>
 		<h1 class="mt-1 text-4xl font-extrabold">Welcome, {data.displayName}</h1>
-		<p class="mt-2 text-text-700">Role: <strong>{data.user.perms}</strong> · {data.goldBars.toLocaleString()} clocks</p>
+		<p class="mt-2 text-text-700">Permissions: <strong>{data.user.perms.join(', ').replaceAll('-', ' ')}</strong> · {data.goldBars.toLocaleString()} clocks</p>
 	</header>
 
 	<section class="rounded-2xl border-2 p-6 {data.strikes === 0 ? 'border-green-500 bg-green-50' : 'border-red-400 bg-red-50'}">
