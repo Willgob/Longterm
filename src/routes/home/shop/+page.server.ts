@@ -1,7 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { desc, eq, getTableColumns, sql } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { shop, shopImage } from '$lib/server/db/schema';
+import { shop } from '$lib/server/db/schema';
+import { verifyUploadProof } from '$lib/server/uploadthing';
 import { getOrCreateUser } from '$lib/server/user';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -9,29 +10,31 @@ function readText(data: FormData, key: string) {
 	return String(data.get(key) ?? '').trim();
 }
 
-function isHttpUrl(value: string) {
+function isUploadThingUrl(value: string) {
 	try {
 		const url = new URL(value);
-		return url.protocol === 'http:' || url.protocol === 'https:';
+		return (
+			url.protocol === 'https:' &&
+			url.hostname.endsWith('.ufs.sh') &&
+			url.pathname.startsWith('/f/') &&
+			url.pathname.length > 3 &&
+			!url.username &&
+			!url.password &&
+			!url.search &&
+			!url.hash
+		);
 	} catch {
 		return false;
 	}
 }
-
-const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
-const maxImageSize = 5 * 1024 * 1024;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(303, '/');
 	await getOrCreateUser(locals.user);
 
 	const items = await db
-		.select({
-			...getTableColumns(shop),
-			hasUploadedImage: sql<boolean>`${shopImage.shopId} is not null`
-		})
+		.select()
 		.from(shop)
-		.leftJoin(shopImage, eq(shop.id, shopImage.shopId))
 		.where(eq(shop.slackId, locals.user.slackId))
 		.orderBy(desc(shop.createdAt), desc(shop.id));
 
@@ -48,8 +51,8 @@ export const actions: Actions = {
 		const description = readText(data, 'description');
 		const specification = readText(data, 'specification');
 		const imageUrl = readText(data, 'imageUrl');
-		const imageEntry = data.get('imageFile');
-		const imageFile = imageEntry instanceof File && imageEntry.size > 0 ? imageEntry : null;
+		const imageKey = readText(data, 'imageKey');
+		const imageProof = readText(data, 'imageProof');
 		const requestedPriceValue = readText(data, 'requestedPrice');
 		const goalDaysValue = readText(data, 'goalDays');
 		const requestedPrice = Number(requestedPriceValue);
@@ -70,50 +73,32 @@ export const actions: Actions = {
 		if (specification.length > 1_000) {
 			return fail(400, { message: 'Specification must be 1,000 characters or fewer.' });
 		}
-		if (imageFile && !allowedImageTypes.has(imageFile.type)) {
-			return fail(400, { message: 'Upload a JPEG, PNG, WebP, GIF, or AVIF image.' });
-		}
-		if (imageFile && imageFile.size > maxImageSize) {
-			return fail(400, { message: 'The uploaded image must be 5 MB or smaller.' });
-		}
-		if (imageFile && imageFile.name.length > 255) {
-			return fail(400, { message: 'The uploaded image filename is too long.' });
-		}
-		if (!imageFile && (imageUrl.length > 2_048 || !isHttpUrl(imageUrl))) {
-			return fail(400, { message: 'Upload an image or enter a valid http(s) image URL.' });
+		if (
+			imageUrl.length > 2_048 ||
+			imageKey.length > 512 ||
+			imageProof.length > 128 ||
+			!isUploadThingUrl(imageUrl) ||
+			!imageKey ||
+			!imageProof ||
+			!verifyUploadProof(locals.user.slackId, imageUrl, imageKey, imageProof)
+		) {
+			return fail(400, { message: 'Upload a valid product image before submitting.' });
 		}
 
 		const now = Math.floor(Date.now() / 1000);
-		const imageBytes = imageFile ? new Uint8Array(await imageFile.arrayBuffer()) : null;
 
-		await db.transaction(async (tx) => {
-			const [createdItem] = await tx
-				.insert(shop)
-				.values({
-					slackId: locals.user!.slackId,
-					name,
-					description,
-					specification,
-					imageUrl: imageFile ? '' : imageUrl,
-					goalDays,
-					requestedPrice,
-					currency: 'USD',
-					status: 'pending',
-					createdAt: now,
-					updatedAt: now
-				})
-				.returning({ id: shop.id });
-
-			if (imageFile && imageBytes) {
-				await tx.insert(shopImage).values({
-					shopId: createdItem.id,
-					data: imageBytes,
-					mimeType: imageFile.type,
-					fileName: imageFile.name,
-					size: imageFile.size,
-					createdAt: now
-				});
-			}
+		await db.insert(shop).values({
+			slackId: locals.user.slackId,
+			name,
+			description,
+			specification,
+			imageUrl,
+			goalDays,
+			requestedPrice,
+			currency: 'USD',
+			status: 'pending',
+			createdAt: now,
+			updatedAt: now
 		});
 
 		throw redirect(303, '/home/shop?requested=1');

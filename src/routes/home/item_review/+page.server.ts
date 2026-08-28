@@ -1,7 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { shop, shopImage, user } from '$lib/server/db/schema';
+import { shop, user } from '$lib/server/db/schema';
 import { canReviewItems, getOrCreateUser } from '$lib/server/user';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -44,7 +44,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				description: shop.description,
 				specification: shop.specification,
 				imageUrl: shop.imageUrl,
-				hasUploadedImage: sql<boolean>`${shopImage.shopId} is not null`,
 				goalDays: shop.goalDays,
 				requestedPrice: shop.requestedPrice,
 				currency: shop.currency,
@@ -61,7 +60,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			})
 			.from(shop)
 			.innerJoin(user, eq(shop.slackId, user.slackId))
-			.leftJoin(shopImage, eq(shop.id, shopImage.shopId))
 			.where(eq(shop.status, selectedStatus))
 			.orderBy(selectedStatus === 'pending' ? asc(shop.createdAt) : desc(shop.updatedAt), asc(shop.id))
 			.limit(1),

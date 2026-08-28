@@ -1,11 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, customType, index, integer, pgEnum, pgTable, serial, text } from 'drizzle-orm/pg-core';
-
-const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
-	dataType() {
-		return 'bytea';
-	}
-});
+import { check, index, integer, pgEnum, pgTable, serial, text } from 'drizzle-orm/pg-core';
 
 export const permissionValues = ['user', 'admin', 'fulfillment', 'item-review'] as const;
 export const userPermission = pgEnum('user_permission', permissionValues);
@@ -58,17 +52,6 @@ export const shop = pgTable(
 		)
 	]
 );
-
-export const shopImage = pgTable('shop_image', {
-	shopId: integer('shop_id')
-		.primaryKey()
-		.references(() => shop.id, { onDelete: 'cascade' }),
-	data: bytea('data').notNull(),
-	mimeType: text('mime_type').notNull(),
-	fileName: text('file_name').notNull(),
-	size: integer('size').notNull(),
-	createdAt: integer('created_at').notNull()
-});
 
 export type ShopItem = typeof shop.$inferSelect;
 export type NewShopItem = typeof shop.$inferInsert;

@@ -45,7 +45,7 @@
 			<input type="hidden" name="itemId" value={data.item.id} />
 
 			<div class="aspect-square self-start overflow-hidden rounded-2xl border border-background-400 bg-background-200">
-				<img class="block h-full w-full object-cover" src={data.item.hasUploadedImage ? `/api/item-images/${data.item.id}` : data.item.imageUrl || fallbackImage} alt={data.item.name} />
+				<img class="block h-full w-full object-cover" src={data.item.imageUrl || fallbackImage} alt={data.item.name} />
 			</div>
 
 			<div class="flex min-w-0 flex-col">

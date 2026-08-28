@@ -53,7 +53,7 @@
 			<article class="flex h-96 w-56.25 flex-col items-center justify-between rounded-xl border-2 border-background-300 bg-background-200 p-4">
 				<div class="w-full">
 					<div class="relative mx-auto flex h-40 w-48 items-center justify-center overflow-hidden rounded-xl bg-primary-700/15 p-1">
-						<img src={item.hasUploadedImage ? `/api/item-images/${item.id}` : item.imageUrl} alt={item.name} class="block h-full w-full rounded-xl object-contain object-center" />
+						<img src={item.imageUrl} alt={item.name} class="block h-full w-full rounded-xl object-contain object-center" />
 					</div>
 					<h2 class="pt-2 text-center text-xl font-semibold text-text-800">{item.name}</h2>
 					<p class="line-clamp-3 pt-1 text-center text-xs text-text-800">{item.description}</p>
