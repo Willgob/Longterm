@@ -2,30 +2,12 @@ import { fail, redirect } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import { shop } from '$lib/server/db/schema';
-import { verifyUploadProof } from '$lib/server/uploadthing';
+import { deleteUploadedImage, uploadProductImage, validateProductImage } from '$lib/server/cdn';
 import { getOrCreateUser } from '$lib/server/user';
 import type { Actions, PageServerLoad } from './$types';
 
 function readText(data: FormData, key: string) {
 	return String(data.get(key) ?? '').trim();
-}
-
-function isUploadThingUrl(value: string) {
-	try {
-		const url = new URL(value);
-		return (
-			url.protocol === 'https:' &&
-			url.hostname.endsWith('.ufs.sh') &&
-			url.pathname.startsWith('/f/') &&
-			url.pathname.length > 3 &&
-			!url.username &&
-			!url.password &&
-			!url.search &&
-			!url.hash
-		);
-	} catch {
-		return false;
-	}
 }
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -42,7 +24,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	requestItem: async ({ request, locals }) => {
+	requestItem: async ({ request, locals, fetch }) => {
 		if (!locals.user) throw redirect(303, '/');
 		await getOrCreateUser(locals.user);
 
@@ -50,9 +32,7 @@ export const actions: Actions = {
 		const name = readText(data, 'name');
 		const description = readText(data, 'description');
 		const specification = readText(data, 'specification');
-		const imageUrl = readText(data, 'imageUrl');
-		const imageKey = readText(data, 'imageKey');
-		const imageProof = readText(data, 'imageProof');
+		const image = data.get('image');
 		const requestedPriceValue = readText(data, 'requestedPrice');
 		const goalDaysValue = readText(data, 'goalDays');
 		const requestedPrice = Number(requestedPriceValue);
@@ -73,33 +53,42 @@ export const actions: Actions = {
 		if (specification.length > 1_000) {
 			return fail(400, { message: 'Specification must be 1,000 characters or fewer.' });
 		}
-		if (
-			imageUrl.length > 2_048 ||
-			imageKey.length > 512 ||
-			imageProof.length > 128 ||
-			!isUploadThingUrl(imageUrl) ||
-			!imageKey ||
-			!imageProof ||
-			!verifyUploadProof(locals.user.slackId, imageUrl, imageKey, imageProof)
-		) {
-			return fail(400, { message: 'Upload a valid product image before submitting.' });
+		const imageError = validateProductImage(image);
+		if (imageError || !(image instanceof File)) {
+			return fail(400, { message: imageError ?? 'Choose a product image before submitting.' });
+		}
+
+		let uploadedImage;
+		try {
+			uploadedImage = await uploadProductImage(image, fetch);
+		} catch (error) {
+			console.error('Failed to upload product image to the Hack Club CDN.', error);
+			return fail(502, { message: 'The product image could not be uploaded. Please try again.' });
 		}
 
 		const now = Math.floor(Date.now() / 1000);
 
-		await db.insert(shop).values({
-			slackId: locals.user.slackId,
-			name,
-			description,
-			specification,
-			imageUrl,
-			goalDays,
-			requestedPrice,
-			currency: 'USD',
-			status: 'pending',
-			createdAt: now,
-			updatedAt: now
-		});
+		try {
+			await db.insert(shop).values({
+				slackId: locals.user.slackId,
+				name,
+				description,
+				specification,
+				imageUrl: uploadedImage.url,
+				goalDays,
+				requestedPrice,
+				currency: 'USD',
+				status: 'pending',
+				createdAt: now,
+				updatedAt: now
+			});
+		} catch (error) {
+			console.error('Failed to save product request after image upload.', error);
+			await deleteUploadedImage(uploadedImage.id, fetch).catch((cleanupError) =>
+				console.error('Failed to remove an orphaned Hack Club CDN upload.', cleanupError)
+			);
+			return fail(500, { message: 'The product request could not be saved. Please try again.' });
+		}
 
 		throw redirect(303, '/home/shop?requested=1');
 	}

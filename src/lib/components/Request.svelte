@@ -1,63 +1,8 @@
 <script lang="ts">
     import ItemRules from '$lib/components/ItemRules.svelte';
-    import { createUploadThing } from '$lib/utils/uploadthing';
 
     let addItemVerif = $state(false);
-    let imageFile = $state<File>();
-    let imageUrl = $state('');
-    let imageKey = $state('');
-    let imageProof = $state('');
-    let uploadError = $state('');
-    let uploadProgress = $state(0);
-    let submitUploadedForm = false;
     let { onClose, errorMessage = '' }: { onClose: () => void; errorMessage?: string } = $props();
-
-    const { startUpload, isUploading } = createUploadThing('imageUploader', {
-        uploadProgressGranularity: 'fine',
-        onUploadProgress: (progress) => {
-            uploadProgress = progress;
-        },
-        onUploadError: (error) => {
-            uploadError = error.message;
-        }
-    });
-
-    async function handleSubmit(event: SubmitEvent) {
-        if (submitUploadedForm) {
-            submitUploadedForm = false;
-            return;
-        }
-
-        event.preventDefault();
-        const form = event.currentTarget as HTMLFormElement;
-        const submitter = event.submitter;
-
-        if (!imageFile) {
-            uploadError = 'Choose a product image before submitting.';
-            return;
-        }
-
-        uploadError = '';
-        uploadProgress = 0;
-
-        try {
-            const result = await startUpload([imageFile]);
-            const uploadedImage = result?.[0];
-
-            if (!uploadedImage?.serverData.ufsUrl) {
-                if (!uploadError) uploadError = 'The image could not be uploaded. Please try again.';
-                return;
-            }
-
-            imageUrl = uploadedImage.serverData.ufsUrl;
-            imageKey = uploadedImage.serverData.key;
-            imageProof = uploadedImage.serverData.proof;
-            submitUploadedForm = true;
-            form.requestSubmit(submitter);
-        } catch {
-            uploadError = 'The image upload was cancelled or interrupted. Please try again.';
-        }
-    }
 </script>
 
 
@@ -69,13 +14,9 @@
         <ItemRules />
         <button type="button" class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white mr-4 mb-3" onclick={() => (addItemVerif = true)}>I have read and understood the rules</button>
     {:else}
-        <form method="POST" action="?/requestItem" onsubmit={handleSubmit} class="flex flex-col gap-4">
+        <form method="POST" action="?/requestItem" enctype="multipart/form-data" class="flex flex-col gap-4">
             {#if errorMessage}
                 <p class="rounded-md border border-accent-500 bg-accent-500/10 p-3 text-sm text-text-950" role="alert">{errorMessage}</p>
-            {/if}
-
-            {#if uploadError}
-                <p class="rounded-md border border-accent-500 bg-accent-500/10 p-3 text-sm text-text-950" role="alert">{uploadError}</p>
             {/if}
 
             <label for="name" class="text-sm text-text-700">Product Name</label>
@@ -97,28 +38,17 @@
             <label for="image-file" class="text-sm text-text-700">Product image</label>
             <input
                 type="file"
+                name="image"
                 id="image-file"
                 accept="image/*"
                 required
-                onchange={(event) => {
-                    imageFile = event.currentTarget.files?.[0];
-                    imageUrl = '';
-                    imageKey = '';
-                    imageProof = '';
-                    uploadError = '';
-                }}
                 class="rounded-md border border-background-300 bg-background-50 px-3 py-2 text-sm text-text-950 file:mr-3 file:cursor-pointer file:rounded file:border-0 file:bg-primary-500 file:px-3 file:py-2 file:text-white"
             >
-            <input type="hidden" name="imageUrl" value={imageUrl}>
-            <input type="hidden" name="imageKey" value={imageKey}>
-            <input type="hidden" name="imageProof" value={imageProof}>
-            <p class="-mt-3 text-xs text-text-600">One image, maximum 4 MB. It will upload when you submit the request.</p>
+            <p class="-mt-3 text-xs text-text-600">One image, maximum 4 MB. It uploads securely when you submit the request.</p>
     
             <div class="flex gap-3">
-                <button disabled={$isUploading} class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white disabled:cursor-wait disabled:opacity-60">
-                    {$isUploading ? `Uploading ${uploadProgress}%` : 'Submit For Review'}
-                </button>
-                <button type="button" disabled={$isUploading} class="cursor-pointer rounded-sm border border-background-400 px-4 py-2 text-text-900 disabled:cursor-not-allowed disabled:opacity-60" onclick={onClose}>Cancel</button>
+                <button class="cursor-pointer rounded-sm bg-primary-500 px-4 py-2 text-white">Submit For Review</button>
+                <button type="button" class="cursor-pointer rounded-sm border border-background-400 px-4 py-2 text-text-900" onclick={onClose}>Cancel</button>
             </div>
         </form>
     {/if}        
