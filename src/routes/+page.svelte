@@ -5,5 +5,9 @@
 
 <div class="min-h-screen w-full overflow-auto">
     <img src={backgroundUrl} alt="" class="block h-auto w-auto min-w-full max-w-none" />
-    <Nav />
+
+    <div class="absolute top-0 left-0 right-0">
+        <Nav />
+    </div>
+    
 </div> 
