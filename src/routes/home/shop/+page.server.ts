@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { db } from '$lib/server/db';
-import { shop } from '$lib/server/db/schema';
+import { shop, user } from '$lib/server/db/schema';
 import { deleteUploadedImage, uploadProductImage, validateProductImage } from '$lib/server/cdn';
 import { getOrCreateUser } from '$lib/server/user';
 import type { Actions, PageServerLoad } from './$types';
@@ -12,7 +12,7 @@ function readText(data: FormData, key: string) {
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) throw redirect(303, '/');
-	await getOrCreateUser(locals.user);
+	const account = await getOrCreateUser(locals.user);
 
 	const items = await db
 		.select()
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.where(eq(shop.slackId, locals.user.slackId))
 		.orderBy(desc(shop.createdAt), desc(shop.id));
 
-	return { items };
+	return { items, progressItemId: account.progressItem };
 };
 
 export const actions: Actions = {
@@ -91,5 +91,43 @@ export const actions: Actions = {
 		}
 
 		throw redirect(303, '/home/shop?requested=1');
+	},
+
+	changeProgressItem: async ({ request, locals }) => {
+		if (!locals.user) throw redirect(303, '/');
+		await getOrCreateUser(locals.user);
+
+		const formData = await request.formData();
+		const progressItemId = Number(formData.get('progressItemId'));
+
+		if (!Number.isSafeInteger(progressItemId)) {
+			return fail(400, { progressError: 'Choose a valid shop item.' });
+		}
+
+		const [selectedItem] = await db
+			.select({ id: shop.id })
+			.from(shop)
+			.where(
+				and(
+					eq(shop.id, progressItemId),
+					eq(shop.slackId, locals.user.slackId),
+					eq(shop.status, 'approved')
+				)
+			)
+			.limit(1);
+
+		if (!selectedItem) {
+			return fail(400, { progressError: 'You can only track one of your approved items.' });
+		}
+
+		await db
+			.update(user)
+			.set({
+				progressItem: selectedItem.id,
+				updatedAt: Math.floor(Date.now() / 1000)
+			})
+			.where(eq(user.slackId, locals.user.slackId));
+
+		return { progressChanged: true };
 	}
 };

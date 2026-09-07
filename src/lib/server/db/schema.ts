@@ -12,10 +12,11 @@ export const user = pgTable('user', {
 	perms: userPermission('perms')
 		.array()
 		.notNull()
-		.default(sql`ARRAY['user']::user_permission[]`),
+		.default(sql`ARRAY['user'::user_permission]`),
 	isReviewer: integer('is_reviewer').notNull().default(0),
 	email: text('email').notNull(),
 	displayName: text('display_name').notNull().default(''),
+	progressItem: integer('progress_item'),
 	avatarUrl: text('avatar_url').notNull().default(''),
 	verified: integer('verified').notNull().default(0),
 	createdAt: integer('created_at').notNull().default(0),
