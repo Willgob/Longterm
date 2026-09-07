@@ -65,6 +65,8 @@ async function refreshAccessToken(fetcher: typeof fetch, refreshToken: string) {
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
+	if (event.url.pathname === '/') return resolve(event);
+
 	let accessToken = event.cookies.get('hca_access_token');
 	let user;
 
