@@ -4,15 +4,23 @@
     const faqs = [
         {
             question: 'What is this program?',
-            answer: 'This is a YSWS where you can choose a prize and use your Hackatime progress to save up for a grant to buy it.'
+            answer: 'This is a YSWS where you can choose a custom prize to be added to your CUSTOM shop and you work towards it using Hackatime'
         },
         {
-            question: 'How do I get started?',
-            answer: 'Sign up, track your eligible work with Hackatime, and check your progress as you work toward your chosen prize.'
+            question: 'What can I ship?',
+            answer: 'Anything software !!! Hardware is still a WIP'
         },
         {
-            question: 'What can I use my grant for?',
-            answer: 'Your grant is used to purchase the custom prize you selected, subject to the program rules and approval.'
+            question: 'Is this free?',
+            answer: 'Yes! Longterm is free like all Hack Club events.Hack Club is a 501(C)(3) non-profit organization.'
+        },
+        {
+            question: 'Am I eligible?',
+            answer: 'Yes! Anyone whi is between the ages of 13 and 18 is eligible to participate in Longterm'
+        },
+        {
+            question: 'Any other questions?',
+            answer: 'If you have any other questions, feel free to reach out on <a href="https://hackclub.enterprise.slack.com/team/U09C832RGJW" target="_blank" rel="noreferrer">Slack</a> or <a href="mailto:willgobhc@gmail.com">email</a>.'
         }
     ];
     import Nav from '$lib/components/Nav.svelte';
@@ -52,7 +60,7 @@
                         <span>{faq.question}</span>
                         <span class="text-3xl leading-none transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                     </summary>
-                    <p class="mt-4 max-w-3xl border-t border-[#050633]/15 pt-4 text-lg leading-relaxed text-[#050633]/85">{faq.answer}</p>
+                    <p class="mt-4 max-w-3xl border-t border-[#050633]/15 pt-4 text-lg leading-relaxed text-[#050633]/85 [&_a]:text-[#050633] [&_a]:underline [&_a]:underline-offset-2">{@html faq.answer}</p>
                 </details>
             {/each}
         </div>
