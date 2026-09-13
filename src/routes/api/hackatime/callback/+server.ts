@@ -1,23 +1,23 @@
 import { redirect } from "@sveltejs/kit";
 import { dev } from "$app/environment";
-import { HCA_CLIENT_ID, HCA_CLIENT_SECRET, HCA_REDIRECT_ADDRESS } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { RequestHandler } from "./$types";
 
 export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
     const oauthError = url.searchParams.get("error");
     if (oauthError) {
-        console.error("HCA returned an error:", oauthError);
+        console.error("Hackatime returned an error:", oauthError);
         const description = url.searchParams.get("error_description");
         return new Response(`Login failed: ${description ?? oauthError}`, { status: 400 });
     }
 
     const authCode = url.searchParams.get("code");
     if (!authCode) {
-        return new Response("Missing authorization code. Start the login flow from /api/login.", { status: 400 });
+        return new Response("Missing authorization code. Start the login flow from /api/hackatime.", { status: 400 });
     }
 
-    const expectedState = cookies.get("hca_oauth_state");
-    cookies.delete("hca_oauth_state", { path: "/" });
+    const expectedState = cookies.get("hackatime_oauth_state");
+    cookies.delete("hackatime_oauth_state", { path: "/" });
     const state = url.searchParams.get("state");
     if (!state || !expectedState || state !== expectedState) {
         return new Response("Invalid state parameter", { status: 400 });
@@ -26,18 +26,20 @@ export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
     // Token exchange
     let tokenResponse;
     try {
-        tokenResponse = await fetch("https://auth.hackclub.com/oauth/token", {
+        const tokenParams = new URLSearchParams({
+            client_id: env.HACKATIME_CLIENT_ID ?? "",
+            client_secret: env.HACKATIME_CLIENT_SECRET ?? "",
+            code: authCode,
+            redirect_uri: `${env.HACKATIME_REDIRECT_ADDRESS ?? ""}/api/hackatime/callback`,
+            grant_type: "authorization_code"
+        });
+
+        tokenResponse = await fetch("https://hackatime.hackclub.com/oauth/token", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/x-www-form-urlencoded"
             },
-            body: JSON.stringify({
-                client_id: HCA_CLIENT_ID,
-                client_secret: HCA_CLIENT_SECRET,
-                code: authCode,
-                redirect_uri: `${HCA_REDIRECT_ADDRESS}/api/login/callback`,
-                grant_type: "authorization_code"
-            })
+            body: tokenParams
         });
     } catch (error) {
         console.error("Error fetching access token:", error);
@@ -51,28 +53,17 @@ export const GET: RequestHandler = async ({ url, cookies, fetch }) => {
 
     const tokens = await tokenResponse.json();
 
-    const accessTokenMaxAge = Math.min(
-        typeof tokens.expires_in === "number" ? tokens.expires_in : 60 * 60,
-        60 * 60
-    );
+    const accessTokenMaxAge = typeof tokens.expires_in === "number"
+        ? tokens.expires_in
+        : 60 * 60 * 24 * 365 * 16;
 
-    cookies.set("hca_access_token", tokens.access_token, {
+    cookies.set("hackatime_access_token", tokens.access_token, {
         path: "/",
         httpOnly: true,
         secure: !dev,
         sameSite: "lax",
         maxAge: accessTokenMaxAge
     });
-
-    if (tokens.refresh_token) {
-        cookies.set("hca_refresh_token", tokens.refresh_token, {
-            path: "/",
-            httpOnly: true,
-            secure: !dev,
-            sameSite: "lax",
-            maxAge: 60 * 60 * 24 * 180
-        });
-    }
 
     throw redirect(302, "/home");
 };
